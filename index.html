@@ -1,8 +1,15 @@
 <html>
+  <head>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+  </head>
   <body>
     <script type="module">
-      import { test } from './dist/index.js'
-      test()
+      import FaviconBadge from './dist/index.js'
+      let i = 0
+      window.setInterval(() => {
+        new FaviconBadge().draw(i + '')
+        i += 1
+      }, 1000)
     </script>
   </body>
 </html>

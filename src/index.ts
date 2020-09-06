@@ -152,4 +152,9 @@ export default class FaviconBadge {
     faviconImage.src = src
     faviconImage.onload(null as any)
   }
+
+  public reset() {
+    this.currentFavicon = this.originalFavicon
+    this.setFaviconTag(this.originalFavicon || '')
+  }
 }

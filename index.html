@@ -5,10 +5,13 @@
   <body>
     <script type="module">
       import FaviconBadge from './dist/index.js'
-      let i = 0
-      window.setInterval(() => {
-        new FaviconBadge().draw(i + '')
-        i += 1
+      const faviconBadge = new FaviconBadge()
+      faviconBadge.draw('1')
+      setTimeout(() => {
+        faviconBadge.reset()
+      }, 1000)
+      setTimeout(() => {
+        faviconBadge.draw('2')
       }, 1000)
     </script>
   </body>

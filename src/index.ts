@@ -5,7 +5,6 @@ export default class FaviconBadge {
   private height = 9
   private background = 'red'
   private font = 10 * this.r + 'px arial'
-  private crossOrigin = false
 
   private canvas: HTMLCanvasElement = this.getCanvas()
   private currentFavicon: string | null = null
@@ -148,9 +147,8 @@ export default class FaviconBadge {
     }
 
     const src = this.getCurrentFavicon() || ''
-    if (!src.match(/^data/) && this.crossOrigin) {
-      faviconImage.crossOrigin = 'anonymous'
-    }
+    faviconImage.crossOrigin = 'anonymous'
+    faviconImage.referrerPolicy = 'origin'
     faviconImage.src = src
     faviconImage.onload(null as any)
   }

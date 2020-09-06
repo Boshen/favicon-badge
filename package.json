@@ -11,7 +11,7 @@
     "start": "tsc --watch",
     "serve": "serve .",
     "lint": "eslint",
-    "build": "rm -rf dist && yarn lint  && tsc",
+    "build": "rm -rf dist && tsc",
     "prettier": "prettier --write './src/**/*.ts'",
     "prepublish": "yarn build"
   },

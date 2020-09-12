@@ -1,4 +1,6 @@
 export default class FaviconBadge {
+  constructor(private options: { crossOrigin?: boolean } = {}) {}
+
   private r = Math.ceil(window.devicePixelRatio) || 1
   private size = 16 * this.r
   private width = 7
@@ -136,21 +138,25 @@ export default class FaviconBadge {
   public draw(label: string, color = '#ffffff') {
     const context = this.canvas.getContext('2d')!
 
-    const faviconImage = document.createElement('img')
-    faviconImage.onload = () => {
-      context.clearRect(0, 0, this.size, this.size)
-      context.drawImage(faviconImage, 0, 0, faviconImage.width, faviconImage.height, 0, 0, this.size, this.size)
-      if (label.length > 0) {
-        this.drawBubble(label, color)
-      }
-      this.refreshFavicon()
-    }
+    const faviconImage = new Image()
+    faviconImage.addEventListener(
+      'load',
+      () => {
+        context.clearRect(0, 0, this.size, this.size)
+        context.drawImage(faviconImage, 0, 0, faviconImage.width, faviconImage.height, 0, 0, this.size, this.size)
+        if (label.length > 0) {
+          this.drawBubble(label, color)
+        }
+        this.refreshFavicon()
+      },
+      false
+    )
 
     const src = this.getCurrentFavicon() || ''
-    faviconImage.crossOrigin = 'anonymous'
-    faviconImage.referrerPolicy = 'origin'
+    if (!src.match(/^data/) && this.options.crossOrigin) {
+      faviconImage.crossOrigin = 'anonymous'
+    }
     faviconImage.src = src
-    faviconImage.onload(null as any)
   }
 
   public reset() {

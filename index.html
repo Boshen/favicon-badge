@@ -5,14 +5,16 @@
   <body>
     <script type="module">
       import FaviconBadge from './dist/index.js'
-      const faviconBadge = new FaviconBadge()
+      const faviconBadge = new FaviconBadge({
+        crossOrigin: true,
+      })
       faviconBadge.draw('1')
       setTimeout(() => {
         faviconBadge.reset()
       }, 1000)
       setTimeout(() => {
         faviconBadge.draw('2')
-      }, 1000)
+      }, 2000)
     </script>
   </body>
 </html>

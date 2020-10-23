@@ -1,19 +1,18 @@
 <html>
   <head>
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <link rel="icon" href="https://agora-web-cdn.oss-cn-beijing.aliyuncs.com/tale/tale-logo-no-padding@2x.png" />
   </head>
   <body>
     <script type="module">
       import FaviconBadge from './dist/index.js'
-      const faviconBadge = new FaviconBadge({
-        crossOrigin: true,
-      })
+      const faviconBadge = new FaviconBadge()
       faviconBadge.draw('1')
       setTimeout(() => {
         faviconBadge.reset()
-      }, 1000)
-      setTimeout(() => {
-        faviconBadge.draw('2')
+      }, 2000)
+      let i = 1
+      setInterval(() => {
+        faviconBadge.draw(String(i++))
       }, 2000)
     </script>
   </body>

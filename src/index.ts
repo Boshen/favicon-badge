@@ -1,6 +1,4 @@
 export default class FaviconBadge {
-  constructor(private options: { crossOrigin?: boolean } = {}) {}
-
   private r = Math.ceil(window.devicePixelRatio) || 1
   private size = 16 * this.r
   private width = 7
@@ -8,9 +6,9 @@ export default class FaviconBadge {
   private background = 'red'
   private font = 10 * this.r + 'px arial'
 
-  private canvas: HTMLCanvasElement = this.getCanvas()
-  private currentFavicon: string | null = null
-  private originalFavicon: string | null = null
+  private canvas: HTMLCanvasElement | null = null
+  private faviconUrl: string = this.getFaviconUrl()
+  private faviconImage: HTMLImageElement | null = null
 
   private agent = navigator.userAgent.toLowerCase()
 
@@ -26,25 +24,44 @@ export default class FaviconBadge {
     return this.agent.indexOf(browser) !== -1
   }
 
-  private getCanvas() {
+  private async getFaviconImage(): Promise<HTMLImageElement> {
+    return new Promise((resolve) => {
+      if (this.faviconImage) {
+        resolve(this.faviconImage)
+        return
+      }
+      const faviconImage = new Image()
+      faviconImage.addEventListener(
+        'load',
+        () => {
+          this.faviconImage = faviconImage
+          resolve(faviconImage)
+        },
+        false
+      )
+      faviconImage.crossOrigin = 'anonymous'
+      faviconImage.src = this.faviconUrl + '?_=' + Math.round(Math.random() * 1000000)
+    })
+  }
+
+  private async getCanvas() {
     if (this.canvas) {
       return this.canvas
     }
     const canvas = document.createElement('canvas')
     canvas.width = this.size
     canvas.height = this.size
+    const faviconImage = await this.getFaviconImage()
+    const context = canvas.getContext('2d')!
+    context.clearRect(0, 0, this.size, this.size)
+    context.drawImage(faviconImage, 0, 0, faviconImage.width, faviconImage.height, 0, 0, this.size, this.size)
+    this.canvas = canvas
     return canvas
   }
 
-  private getCurrentFavicon() {
-    if (!this.originalFavicon || !this.currentFavicon) {
-      const tag = this.getFaviconTag()
-      this.currentFavicon = tag ? tag.getAttribute('href') : '/favicon.ico'
-      if (!this.originalFavicon) {
-        this.originalFavicon = this.currentFavicon
-      }
-    }
-    return this.currentFavicon
+  private getFaviconUrl() {
+    const tag = this.getFaviconTag()
+    return tag ? tag.getAttribute('href')! : 'data:;base64,iVBORw0KGgo='
   }
 
   private getFaviconTag() {
@@ -68,26 +85,17 @@ export default class FaviconBadge {
   }
 
   private setFaviconTag(url: string) {
-    if (url) {
-      this.removeFaviconTag()
-      const link = document.createElement('link')
-      link.type = 'image/x-icon'
-      link.rel = 'icon'
-      link.href = url
-      document.getElementsByTagName('head')[0].appendChild(link)
-    }
+    this.removeFaviconTag()
+    const link = document.createElement('link')
+    link.type = 'image/x-icon'
+    link.rel = 'icon'
+    link.href = url
+    document.getElementsByTagName('head')[0].appendChild(link)
   }
 
-  private refreshFavicon() {
-    if (!this.canvas) {
-      return
-    }
-    this.setFaviconTag(this.canvas.toDataURL())
-  }
-
-  private drawBubble(label: string, color: string) {
+  private drawBubble(canvas: HTMLCanvasElement, label: string, color: string) {
     // bubble needs to be larger for double digits
-    const context = this.canvas.getContext('2d')!
+    const context = canvas.getContext('2d')!
     const len = label.length - 1
     const r = this.r
 
@@ -135,32 +143,20 @@ export default class FaviconBadge {
     context.fillText(label, r === 2 ? 29 : 15, this.browser.mozilla ? 7 * r : 6 * r)
   }
 
-  public draw(label: string, color = '#ffffff') {
-    const context = this.canvas.getContext('2d')!
-
-    const faviconImage = new Image()
-    faviconImage.addEventListener(
-      'load',
-      () => {
-        context.clearRect(0, 0, this.size, this.size)
-        context.drawImage(faviconImage, 0, 0, faviconImage.width, faviconImage.height, 0, 0, this.size, this.size)
-        if (label.length > 0) {
-          this.drawBubble(label, color)
-        }
-        this.refreshFavicon()
-      },
-      false
-    )
-
-    const src = this.getCurrentFavicon() || ''
-    if (!src.match(/^data/) && this.options.crossOrigin) {
-      faviconImage.crossOrigin = 'anonymous'
+  public async draw(label: string, color = '#ffffff') {
+    const originalCanvas = await this.getCanvas()
+    const newCanvas = document.createElement('canvas')
+    const context = newCanvas.getContext('2d')!
+    newCanvas.width = originalCanvas.width
+    newCanvas.height = originalCanvas.height
+    context.drawImage(originalCanvas, 0, 0)
+    if (label.length > 0) {
+      this.drawBubble(newCanvas, label, color)
     }
-    faviconImage.src = src
+    this.setFaviconTag(newCanvas.toDataURL())
   }
 
   public reset() {
-    this.currentFavicon = this.originalFavicon
-    this.setFaviconTag(this.originalFavicon || '')
+    this.setFaviconTag(this.faviconUrl)
   }
 }
